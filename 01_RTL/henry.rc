@@ -1,0 +1,97 @@
+Magic 271485
+Revision Verdi_P-2019.06
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 16 66 748 963 224 16
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/RAID2/COURSE/si2_contest/si2_contest004/Contest/icc2019cb/01_RTL/GPSDC_henry.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 4842054.851530 5901547.482668
+cursor 7890000.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 0
+; marker line index
+markerPos 21
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "G1"
+activeDirFile "" "/RAID2/COURSE/si2_contest/si2_contest004/Contest/icc2019cb/01_RTL/GPSDC_henry.fsdb"
+addSignal -h 15 /test/GPSDC_u1/DEN
+addSignal -h 15 -holdScope clk
+addSignal -h 15 -holdScope reset_n
+addGroup "G2"
+addSignal -h 15 /test/GPSDC_u1/c_state[3:0]
+addGroup "G3"
+addSignal -h 15 -UNSIGNED -UDEC /test/GPSDC_u1/sel_x1[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope sel_x0[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope sel_x[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope sel_y1[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope sel_y0[63:0]
+addGroup "G4"
+addSignal -h 15 -UNSIGNED -UDEC /test/GPSDC_u1/inner_down[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope inner_up[127:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope up_C[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope up_D[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope inner_result_r[63:0]
+addGroup "G5"
+addSignal -h 15 -2COMP -UDEC /test/GPSDC_u1/sel_a1[23:0]
+addSignal -h 15 -2COMP -UDEC -holdScope sel_a2[23:0]
+addSignal -h 15 -2COMP -UDEC -holdScope angle_diff[24:0]
+addSignal -h 15 -2COMP -UDEC -holdScope ang_mul[32:0]
+addSignal -h 15 -2COMP -UDEC -holdScope ang_result[31:0]
+addSignal -h 15 -2COMP -UDEC -holdScope sin2[63:0]
+addSignal -h 15 -2COMP -UDEC -holdScope first_result[95:0]
+addSignal -h 15 -2COMP -UDEC -holdScope mid_left[127:0]
+addSignal -h 15 -2COMP -UDEC -holdScope a_r[63:0]
+addGroup "G6"
+addGroup "G7"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+activeDirFile "" "/RAID2/COURSE/si2_contest/si2_contest004/Contest/icc2019cb/01_RTL/GPSDC_henry.fsdb"
+
+GETSIGNALFORM_SCOPE_HIERARCHY_BEGIN
+getSignalForm close
+
+"/test"
+"/test/GPSDC_u1"
+
+SCOPE_LIST_BEGIN
+"/test"
+"/test/GPSDC_u1"
+SCOPE_LIST_END
+
+GETSIGNALFORM_SCOPE_HIERARCHY_END
+
+

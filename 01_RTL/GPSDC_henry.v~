@@ -1,0 +1,325 @@
+`timescale 1ns/10ps
+module GPSDC(clk, reset_n, DEN, LON_IN, LAT_IN, COS_ADDR, COS_DATA, ASIN_ADDR, ASIN_DATA, Valid, a, D);
+input              clk;
+input              reset_n;
+input              DEN;
+input      [23:0]  LON_IN;
+input      [23:0]  LAT_IN;
+input      [95:0]  COS_DATA;
+output     [6:0]   COS_ADDR;
+input      [127:0] ASIN_DATA;
+output     [5:0]   ASIN_ADDR;
+output             Valid;
+output     [39:0]  D;
+output     [63:0]  a;
+
+localparam S_IDLE0 = 4'b0000;
+localparam S_L1    = 4'b1000;
+//localparam S_L2    = 4'b000;
+localparam S_A	   = 4'b0001;
+localparam S_FCOS  = 4'b0011;
+localparam S_INNER = 4'b0010;
+localparam S_MID   = 4'b0110;
+localparam S_FASIN = 4'b0111;
+localparam S_INNERS= 4'b0010;
+localparam S_D     = 4'b0101;
+localparam S_IDLE  = 4'b0100;
+reg [3:0] c_state, n_state;
+// wire reg declare cao
+reg [23:0]LON_IN_A, LON_IN_B;
+reg [23:0]LAT_IN_A, LAT_IN_B;
+wire [47:0] LAT_w;
+reg [95:0] COS_127, COS_0;
+reg [127:0] ASIN_63, ASIN_0;
+
+// ------------------------------------------------------------
+// regs & wire
+// ------------------------------------------------------------
+// find cos
+wire  [47:0] cos_in, cos_val;
+reg  [6:0]  p_h, p_l;
+
+// find asin
+wire [63:0] asin_in, asin_val;
+reg [5:0]  asin_p_h, asin_p_l;
+
+reg [47:0] cos_y0, cos_y1, asin_y0, asin_y1;
+reg [47:0] cos_x0, cos_x1, asin_x0, asin_x1;
+
+
+reg [63:0] a_r;
+
+
+//---------------------------------------
+// CAO
+//---------------------------------------
+
+// FSM block
+always@(posedge clk, negedge reset_n) begin
+      if(!reset_n) begin
+	  	  c_state <= S_IDLE0;
+      end else begin
+          c_state <= n_state;
+      end
+end
+
+always@(*) begin
+	case(c_state)
+		S_IDLE0:if(DEN) n_state = S_L1;
+				else	n_state = S_IDLE0;
+		S_L1:   n_state = S_A;
+		S_A:	if(cos_val == cos_y0) n_state = S_IDLE;
+				else	 			  n_state = S_A;
+		S_FCOS: if(cos_val == cos_y0) n_state = S_INNER;
+				else	 			  n_state = S_FCOS;
+		S_INNER:n_state = S_MID;
+		S_MID:  n_state = S_FASIN;
+		S_FASIN:if(asin_val == asin_y0) n_state = S_D;
+				else	 				n_state = S_FASIN;
+		S_D:	n_state = S_IDLE;
+		S_IDLE: if(DEN) n_state = S_FCOS;
+				else	n_state = S_IDLE;
+		default: n_state = S_IDLE;
+	endcase
+end
+
+//---------------------------------------
+// INPUT block
+//---------------------------------------
+always@(posedge clk, negedge reset_n) begin
+      if(!reset_n) begin
+	  		LON_IN_A <= 24'b0;
+      end else begin
+	  if(DEN)
+          	LON_IN_A <= LON_IN_B;
+	  else
+			LON_IN_A <= LON_IN_A;
+      end
+end
+
+always@(posedge clk, negedge reset_n) begin
+      if(!reset_n) begin
+	  LAT_IN_A <= 24'b0;
+      end else begin
+	  if(DEN)
+          	LAT_IN_A <= LAT_IN_B;
+	  else
+			LAT_IN_A <= LAT_IN_A;
+      end
+end
+
+always@(posedge clk, negedge reset_n) begin
+      if(!reset_n) begin
+	  LON_IN_B <= 24'b0;
+      end else begin
+	  if(DEN)
+          	LON_IN_B <= LON_IN;
+	  else
+			LON_IN_B <= LON_IN_B;
+      end
+end
+
+always@(posedge clk, negedge reset_n) begin
+      if(!reset_n) begin
+	  		LAT_IN_B <= 24'b0;
+      end else begin
+	  if(DEN)
+          	LAT_IN_B <= LAT_IN;
+	  else
+			LAT_IN_B <= LAT_IN_B;
+      end
+end
+
+
+
+
+// ------------------------------------------------------------
+// design
+// ------------------------------------------------------------
+// cos 0, 127
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) 				 COS_0 <= 96'd0;
+	else if (c_state == S_IDLE0) COS_0 <= COS_DATA;
+	else 						 COS_0 <= COS_0;
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) 		    COS_127 <= 96'd0;
+	else if (c_state == S_L1) COS_127 <= COS_DATA;
+	else 				    COS_127 <= COS_127;
+end
+
+// find cos
+assign cos_in   = COS_DATA[95:48];
+assign cos_val  = COS_DATA[47:0];
+assign COS_ADDR = (p_h + p_l) >> 1;
+assign LAT_w = {8'd0, LAT_IN_B, 16'd0};
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) p_h <= 7'h00;
+	else begin
+		case (c_state)
+			S_IDLE0: 	 p_h <= (DEN) ? 7'h7f : 7'h00;
+			S_L1: 		 p_h <= 7'h7f;
+			S_A, S_FCOS: p_h <= (cos_in > LAT_w) ? COS_ADDR : p_h;
+			default: 	 p_h <= 7'h7f; // to load cos(x(0, 0)
+		endcase 
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) p_l <= 7'h00;
+	else begin
+		case (c_state)
+			S_IDLE0: 	 p_l <= (DEN) ? 7'h7f : 7'h00;
+			S_L1: 		 p_l <= 7'h00;
+			S_A, S_FCOS: p_l <= (cos_in > LAT_w) ? p_l : COS_ADDR;
+			default: 	 p_l <= 7'h00; // to load cos(x(0, 0))
+		endcase 
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) cos_y0 <= 48'd0;
+	else begin
+		case (c_state)
+			S_IDLE0: 	 cos_y0 <= cos_val;
+			S_IDLE: 	 cos_y0 <= COS_0[47:0];
+			S_A, S_FCOS: cos_y0 <= (cos_in > LAT_w) ? cos_y0 : cos_val;
+			default: 	 cos_y0 <= cos_y0;
+		endcase
+	
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) cos_x0 <= 48'd0;
+	else begin
+		case (c_state)
+			S_IDLE0: 	 cos_x0 <= cos_in;
+			S_IDLE: 	 cos_x0 <= COS_0[95:48];
+			S_A, S_FCOS: cos_x0 <= (cos_in > LAT_w) ? cos_x0 : cos_in;
+			default: 	 cos_x0 <= cos_x0;
+		endcase
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) cos_y1 <= 48'd0;
+	else begin
+		case (c_state)
+			S_L1: 		 cos_y1 <= cos_val;
+			S_IDLE: 	 cos_y1 <= COS_127[47:0];
+			S_A, S_FCOS: cos_y1 <= (cos_in > LAT_w) ? cos_val : cos_y1;
+			default: 	 cos_y1 <= cos_y1;
+		endcase
+	
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) cos_x1 <= 48'd0;
+	else begin
+		case (c_state)
+			S_L1: 	     cos_x1 <= cos_in; 
+			S_IDLE: 	 cos_x1 <= COS_127[95:48];
+			S_A, S_FCOS: cos_x1 <= (cos_in > LAT_w) ? cos_in : cos_x1;
+			default: 	 cos_x1 <= cos_x1;
+		endcase
+	end 
+end
+
+
+// asin 63, 0
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) 				 ASIN_0 <= 128'd0;
+	else if (c_state == S_IDLE0) ASIN_0 <= ASIN_DATA;
+	else 						 ASIN_0 <= ASIN_0;
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) 		    ASIN_63 <= 128'd0;
+	else if (c_state == S_L1) ASIN_63 <= ASIN_DATA;
+	else 				    ASIN_63 <= ASIN_63;
+end
+
+// find arcsin
+assign asin_in   = COS_DATA[95:48];
+assign asin_val  = COS_DATA[47:0];
+assign ASIN_ADDR = (asin_p_h + asin_p_l) >> 1;
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) asin_p_h <= 6'h00;
+	else begin
+		case (c_state)
+			S_IDLE0: asin_p_h <= (DEN) ? 6'h3f : 6'h00; 
+			S_L1:    asin_p_h <= 6'h3f;
+			S_FASIN: asin_p_h <= (asin_in > a_r) ? ASIN_ADDR : asin_p_h;
+			default: asin_p_h <= 6'h3f; // to load cos(x(0, 0)
+		endcase 
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) asin_p_l <= 6'h00;
+	else begin
+		case (c_state)
+			S_IDLE0: asin_p_l <= (DEN) ? 6'h3f : 6'h00; 
+			S_L1: 	 asin_p_l <= 6'h00;
+			S_FASIN: asin_p_l <= (asin_in > a_r) ? asin_p_l : ASIN_ADDR;
+			default: asin_p_l <= 6'h00; // to load cos(x(0, 0))
+		endcase 
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) asin_y0 <= 128'd0;
+	else begin
+		case (c_state)
+			S_IDLE0: asin_y0 <= asin_val;
+			S_IDLE:  asin_y0 <= ASIN_0[63:0];
+			S_FASIN: asin_y0 <= (asin_in > a_r) ? asin_y0 : asin_val;
+			default: asin_y0 <= asin_y0;
+		endcase
+	
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) asin_x0 <= 128'd0;
+	else begin
+		case (c_state)
+			S_IDLE0: asin_x0 <= asin_in;
+			S_IDLE:  asin_x0 <= ASIN_0[127:64];
+			S_FASIN: asin_x0 <= (asin_in > a_r) ? asin_x0 : asin_in;
+			default: asin_x0 <= asin_x0;
+		endcase
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) asin_y1 <= 128'd0;
+	else begin
+		case (c_state)
+			S_L1: 	 asin_y1 <= asin_val;
+			S_IDLE:  asin_y1 <= ASIN_63[63:0];
+			S_FASIN: asin_y1 <= (asin_in > a_r) ? asin_val : asin_y1;
+			default: asin_y1 <= asin_y1;
+		endcase
+	
+	end 
+end
+
+always @(posedge clk or negedge reset_n) begin
+	if (!reset_n) asin_x1 <= 128'd0;
+	else begin
+		case (c_state)
+			S_L1: 	 asin_x1 <= asin_in; 
+			S_IDLE:  asin_x1 <= ASIN_63[127:64];
+			S_FASIN: asin_x1 <= (asin_in > a_r) ? asin_in : asin_x1;
+			default: asin_x1 <= asin_x1;
+		endcase
+	end 
+end
+
+
+
+endmodule

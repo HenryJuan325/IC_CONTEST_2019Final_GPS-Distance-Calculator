@@ -1,0 +1,110 @@
+Magic 271485
+Revision Verdi_P-2019.06
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 0 23 1920 1009 224 16
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/RAID2/COURSE/si2_contest/si2_contest004/Contest/icc2019cb/01_RTL/GPSDC_cao.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 5211851.324952 5825336.718429
+cursor 5430000.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 0
+; marker line index
+markerPos 15
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "G1"
+activeDirFile "" "/RAID2/COURSE/si2_contest/si2_contest004/Contest/icc2019cb/01_RTL/GPSDC_cao.fsdb"
+addSignal -h 15 /test/GPSDC_u1/c_state[3:0]
+addSignal -h 15 -holdScope clk
+addSignal -h 15 -holdScope DEN
+addSignal -h 15 -holdScope Valid
+addSignal -h 15 -UNSIGNED -BIN -holdScope a_r[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope asin_in[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope asin_val[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope asin_x0[47:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope asin_y0[47:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope asin_x1[47:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope asin_y1[47:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope asin_p_h[5:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope asin_p_l[5:0]
+addSignal -h 15 -holdScope reset_n
+addSignal -h 15 -UNSIGNED -HEX -holdScope LAT_w[47:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope cos_x0[47:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope cos_x1[47:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope cos_y0[47:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope cos_y1[47:0]
+addSignal -h 15 -2COMP -UDEC -holdScope inner_down[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope inner_up[127:0]
+addSignal -h 15 -2COMP -UDEC -holdScope up_C[63:0]
+addSignal -h 15 -2COMP -UDEC -holdScope up_D[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope cosA[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope cosB[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope inner_result_w[63:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope p_h[6:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope p_l[6:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope COS_ADDR[6:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope sin2[78:0]
+addGroup "G2"
+addSignal -h 15 -2COMP -UDEC /test/GPSDC_u1/ang_mul[40:0]
+addSignal -h 15 -2COMP -UDEC -holdScope ang_result[39:0]
+addSignal -h 15 -2COMP -UDEC -holdScope angle_diff[24:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope LAT_IN_A[23:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope LAT_IN_B[23:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope LON_IN_A[23:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope LON_IN_B[23:0]
+addSignal -h 15 -2COMP -UDEC -holdScope first_result[95:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope first_result_r[95:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope mid_left[127:0]
+addGroup "G3"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+activeDirFile "" "/RAID2/COURSE/si2_contest/si2_contest004/Contest/icc2019cb/01_RTL/GPSDC_cao.fsdb"
+
+GETSIGNALFORM_SCOPE_HIERARCHY_BEGIN
+getSignalForm close
+
+"/test"
+"/test/GPSDC_u1"
+
+SCOPE_LIST_BEGIN
+"/test"
+"/test/GPSDC_u1"
+SCOPE_LIST_END
+
+GETSIGNALFORM_SCOPE_HIERARCHY_END
+
+
